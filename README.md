@@ -6,7 +6,14 @@ Aplikasi desktop Java Swing untuk mengelola tenggat tugas kuliah sekaligus menca
 Pengelolaan jadwal tenggat tugas dan catatan keuangan harian sering dilakukan di tempat terpisah, sehingga menyulitkan pemantauan sisa uang bulanan, total biaya per tugas, serta pengingat tenggat yang mendekat dalam satu aplikasi.
 
 ## Demo / Tangkapan Layar
-Tambahkan tangkapan layar atau GIF demo aplikasi di bagian ini.
+### Dashboard
+![Dashboard Dompet Deadline](docs/dashboard.png)
+
+### Manajemen Tugas
+![Manajemen Tugas Dompet Deadline](docs/tugas.png)
+
+### Manajemen Transaksi
+![Manajemen Transaksi Dompet Deadline](docs/transaksi.png)
 
 ## Fitur Utama
 - **Dashboard:** Menampilkan sisa uang bulan berjalan, total biaya tugas aktif, 3 tenggat terdekat yang belum selesai, serta grafik pengeluaran per kategori pada bulan yang dipilih.
@@ -25,8 +32,20 @@ Tambahkan tangkapan layar atau GIF demo aplikasi di bagian ini.
 ## Cara Kompilasi dan Menjalankan
 Pastikan JDK dan driver JDBC SQLite (lib\sqlite-jdbc-3.54.1.0.jar) tersedia:
 
-javac -encoding UTF-8 -cp "lib\sqlite-jdbc-3.54.1.0.jar" -d out (Get-ChildItem -Path "src" -Filter "*.java" -Recurse | ForEach-Object { $_.FullName })
+javac -encoding UTF-8 -cp "lib\sqlite-jdbc-3.54.1.0.jar" -d out (Get-ChildItem -Path "src" -Filter "*.java" -Recurse | ForEach-Object { .FullName })
 java --enable-native-access=ALL-UNNAMED -cp "out;lib\sqlite-jdbc-3.54.1.0.jar" Main
+
+### Menjalankan Berkas .jar dari GitHub Releases
+Setelah mengunduh DompetDeadline.jar dari tab Releases di repositori GitHub:
+
+java --enable-native-access=ALL-UNNAMED -cp "DompetDeadline.jar;lib\sqlite-jdbc-3.54.1.0.jar" Main
+
+### Menjalankan Unit Test JUnit
+Pastikan junit-platform-console-standalone-1.11.4.jar berada di folder lib\:
+
+$junitJar = Get-ChildItem -Path "lib" -Filter "junit-platform-console-standalone*.jar" | Select-Object -First 1 -ExpandProperty FullName
+javac -encoding UTF-8 -cp "lib\sqlite-jdbc-3.54.1.0.jar;;out" -d out-test (Get-ChildItem -Path "test" -Filter "*.java" -Recurse | ForEach-Object { .FullName })
+java -jar  execute --class-path "out;out-test;lib\sqlite-jdbc-3.54.1.0.jar" --scan-class-path
 
 ## Lisensi
 Proyek ini menggunakan lisensi MIT. Lihat berkas LICENSE.
