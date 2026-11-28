@@ -73,6 +73,31 @@ public class TransaksiRepository {
         return daftar;
     }
 
+    public boolean perbarui(Transaksi transaksi) throws SQLException {
+        String sql = """
+                UPDATE transaksi
+                SET tanggal = ?, jumlah = ?, kategori_id = ?, tugas_id = ?, catatan = ?
+                WHERE id = ?
+                """;
+
+        try (Connection conn = KoneksiDatabase.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, transaksi.getTanggal().toString());
+            stmt.setLong(2, transaksi.getJumlah().longValueExact());
+            stmt.setInt(3, transaksi.getKategoriId());
+
+            if (transaksi.getTugasId() != null) {
+                stmt.setInt(4, transaksi.getTugasId());
+            } else {
+                stmt.setNull(4, Types.INTEGER);
+            }
+
+            stmt.setString(5, transaksi.getCatatan());
+            stmt.setInt(6, transaksi.getId());
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
     public boolean hapus(int id) throws SQLException {
         String sql = "DELETE FROM transaksi WHERE id = ?";
 

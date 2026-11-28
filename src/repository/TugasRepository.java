@@ -62,6 +62,25 @@ public class TugasRepository {
         return daftar;
     }
 
+    public boolean perbarui(Tugas tugas) throws SQLException {
+        String sql = """
+                UPDATE tugas
+                SET judul = ?, mata_kuliah = ?, tenggat = ?, prioritas = ?, selesai = ?
+                WHERE id = ?
+                """;
+
+        try (Connection conn = KoneksiDatabase.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, tugas.getJudul());
+            stmt.setString(2, tugas.getMataKuliah());
+            stmt.setString(3, tugas.getTenggat().toString());
+            stmt.setString(4, tugas.getPrioritas());
+            stmt.setInt(5, tugas.isSelesai() ? 1 : 0);
+            stmt.setInt(6, tugas.getId());
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
     public boolean perbaruiStatusSelesai(int id, boolean selesai) throws SQLException {
         String sql = "UPDATE tugas SET selesai = ? WHERE id = ?";
 
