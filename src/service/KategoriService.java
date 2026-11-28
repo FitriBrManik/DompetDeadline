@@ -9,10 +9,6 @@ public class KategoriService {
 
     private final KategoriRepository kategoriRepository;
 
-    public KategoriService() {
-        this.kategoriRepository = new KategoriRepository();
-    }
-
     public KategoriService(KategoriRepository kategoriRepository) {
         this.kategoriRepository = kategoriRepository;
     }
@@ -21,11 +17,12 @@ public class KategoriService {
         if (nama == null || nama.isBlank()) {
             throw new IllegalArgumentException("Nama kategori tidak boleh kosong.");
         }
-        if (jenis == null || jenis.isBlank()) {
-            throw new IllegalArgumentException("Jenis kategori tidak boleh kosong.");
+        String jenisNormal = jenis == null ? "" : jenis.trim().toLowerCase();
+        if (!jenisNormal.equals("pemasukan") && !jenisNormal.equals("pengeluaran")) {
+            throw new IllegalArgumentException("Jenis kategori harus 'pemasukan' atau 'pengeluaran'.");
         }
 
-        Kategori kategori = new Kategori(nama.trim(), jenis.trim());
+        Kategori kategori = new Kategori(0, nama.trim(), jenisNormal);
         return kategoriRepository.simpan(kategori);
     }
 

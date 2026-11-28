@@ -1,42 +1,44 @@
 package service;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import model.Kategori;
 import model.Transaksi;
+import repository.KategoriRepository;
 import repository.TransaksiRepository;
 
 public class TransaksiService {
 
     private final TransaksiRepository transaksiRepository;
+    private final KategoriRepository kategoriRepository;
 
-    public TransaksiService() {
-        this.transaksiRepository = new TransaksiRepository();
-    }
-
-    public TransaksiService(TransaksiRepository transaksiRepository) {
+    public TransaksiService(TransaksiRepository transaksiRepository, KategoriRepository kategoriRepository) {
         this.transaksiRepository = transaksiRepository;
+        this.kategoriRepository = kategoriRepository;
     }
 
-    public Transaksi tambahTransaksi(String jenis, double jumlah, String catatan, LocalDate tanggal, int kategoriId)
-            throws SQLException {
-        if (jenis == null || jenis.isBlank()) {
-            throw new IllegalArgumentException("Jenis transaksi tidak boleh kosong.");
-        }
-        if (jumlah <= 0) {
-            throw new IllegalArgumentException("Jumlah transaksi harus lebih dari 0.");
-        }
+    public Transaksi tambahTransaksi(
+            LocalDate tanggal,
+            BigDecimal jumlah,
+            int kategoriId,
+            Integer tugasId,
+            String catatan) throws SQLException {
         if (tanggal == null) {
-            throw new IllegalArgumentException("Tanggal transaksi wajib diisi.");
+            throw new IllegalArgumentException("Tanggal transaksi tidak boleh kosong.");
+        }
+        if (jumlah == null || jumlah.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Jumlah transaksi harus lebih besar dari 0.");
+        }
+        if (kategoriId <= 0) {
+            throw new IllegalArgumentException("Kategori transaksi wajib dipilih.");
         }
 
-        Transaksi transaksi = new Transaksi(
-                jenis.trim(),
-                jumlah,
-                catatan == null ? "" : catatan.trim(),
-                tanggal,
-                kategoriId
-        );
+        String catatanBersih = catatan == null ? "" : catatan.trim();
+        Transaksi transaksi = new Transaksi(0, tanggal, jumlah, kategoriId, tugasId, catatanBersih);
         return transaksiRepository.simpan(transaksi);
     }
 
@@ -44,14 +46,22 @@ public class TransaksiService {
         return transaksiRepository.ambilSemua();
     }
 
-    public double hitungSaldo() throws SQLException {
-        List<Transaksi> daftar = transaksiRepository.ambilSemua();
-        double saldo = 0;
-        for (Transaksi t : daftar) {
-            if ("PEMASUKAN".equalsIgnoreCase(t.getJenis())) {
-                saldo += t.getJumlah();
-            } else if ("PENGELUARAN".equalsIgnoreCase(t.getJenis())) {
-                saldo -= t.getJumlah();
+    public BigDecimal hitungSaldo() throws SQLException {
+        List<Transaksi> daftarTransaksi = transaksiRepository.ambilSemua();
+        List<Kategori> daftarKategori = kategoriRepository.ambilSemua();
+
+        Map<Integer, String> jenisPerKategori = new HashMap<>();
+        for (Kategori k : daftarKategori) {
+            jenisPerKategori.put(k.getId(), k.getJenis() == null ? "" : k.getJenis().toLowerCase());
+        }
+
+        BigDecimal saldo = BigDecimal.ZERO;
+        for (Transaksi t : daftarTransaksi) {
+            String jenis = jenisPerKategori.getOrDefault(t.getKategoriId(), "");
+            if ("pemasukan".equals(jenis)) {
+                saldo = saldo.add(t.getJumlah());
+            } else if ("pengeluaran".equals(jenis)) {
+                saldo = saldo.subtract(t.getJumlah());
             }
         }
         return saldo;
